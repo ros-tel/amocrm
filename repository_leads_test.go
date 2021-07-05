@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexeykhan/amocrm"
+	"github.com/sintanial/amocrm"
 )
 
 type TokenStored struct {

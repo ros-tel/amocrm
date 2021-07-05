@@ -29,7 +29,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/alexeykhan/amocrm"
+	"github.com/sintanial/amocrm"
 )
 
 func TestAccounts_Current(t *testing.T) {
