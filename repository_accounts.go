@@ -25,6 +25,7 @@ package amocrm
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
@@ -72,7 +73,7 @@ func (a accounts) Current(cfg AccountsConfig) (dto *Account, err error) {
 		}
 	}
 
-	resp, rErr := a.api.get(accountsEndpoint, query, nil)
+	resp, rErr := a.api.do(accountsEndpoint, http.MethodGet, query, nil, nil)
 	if rErr != nil {
 		return dto, fmt.Errorf("get accounts: %w", rErr)
 	}

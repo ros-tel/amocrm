@@ -33,6 +33,8 @@ type Client interface {
 	SetToken(token Token) error
 	SetDomain(domain string) error
 	Accounts() Accounts
+	Leads() Leads
+	Contacts() Contacts
 }
 
 // Verify interface compliance.
@@ -104,4 +106,12 @@ func (a *amoCRM) TokenByCode(code string) (Token, error) {
 // Accounts returns accounts repository.
 func (a *amoCRM) Accounts() Accounts {
 	return newAccounts(a.api)
+}
+
+func (a *amoCRM) Leads() Leads {
+	return newLeads(a.api)
+}
+
+func (a *amoCRM) Contacts() Contacts {
+	return newContacts(a.api)
 }

@@ -23,6 +23,7 @@
 package amocrm
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -94,7 +95,7 @@ func newAPI(clientID, clientSecret, redirectURL string) *api {
 	}
 }
 
-func (a *api) get(ep endpoint, q url.Values, h http.Header) (*http.Response, error) {
+func (a *api) do(ep endpoint, method string, q url.Values, h http.Header, data interface{}) (*http.Response, error) {
 	if a.token == nil {
 		return nil, errors.New("invalid token")
 	}
@@ -112,16 +113,50 @@ func (a *api) get(ep endpoint, q url.Values, h http.Header) (*http.Response, err
 		}
 	}
 
+	var body io.Reader
+	if data != nil {
+		header.Set("Content-Type", "application/json")
+		jdata, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+		body = bytes.NewReader(jdata)
+	}
+
 	apiURL, err := a.url(ep.path(), q)
 	if err != nil {
 		return nil, err
 	}
 
-	return a.http.Do(&http.Request{
-		Method: http.MethodGet,
-		Header: header,
-		URL:    apiURL,
-	})
+	r, err := http.NewRequest(method, apiURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+	r.Header = header
+
+	return a.http.Do(r)
+}
+
+func (a *api) read(response *http.Response, target interface{}) (err error) {
+	defer func() {
+		if clErr := response.Body.Close(); clErr != nil {
+			if err != nil {
+				err = fmt.Errorf("close response body: %v: %v", clErr, err)
+			} else {
+				err = fmt.Errorf("close response body: %w", clErr)
+			}
+		}
+	}()
+
+	if response.StatusCode >= 400 {
+		var data []byte
+		data, err = ioutil.ReadAll(response.Body)
+		err = fmt.Errorf("invalid status: %v", string(data))
+		return
+	}
+
+	err = json.NewDecoder(response.Body).Decode(target)
+	return
 }
 
 func (a *api) setToken(token Token) error {
@@ -311,4 +346,9 @@ func isValidDomain(domain string) bool {
 
 func oauth2Err(format string, args ...interface{}) error {
 	return fmt.Errorf("oauth2: "+format, args...)
+}
+
+type apiResponse struct {
+	Links    map[string]map[string]string `json:"_links"`
+	Embedded interface{}                  `json:"_embedded"`
 }

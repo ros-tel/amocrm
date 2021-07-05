@@ -34,4 +34,6 @@ func (e endpoint) path() string {
 
 const (
 	accountsEndpoint endpoint = "accounts"
+	leadsEndpoint endpoint = "leads"
+	contactsEndpoint endpoint = "contacts"
 )

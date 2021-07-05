@@ -22,6 +22,8 @@
 
 package amocrm
 
+type FieldValues map[string]interface{}
+
 // Account represents amoCRM Account entity json DTO.
 type Account struct {
 	ID                      int    `json:"id"`
