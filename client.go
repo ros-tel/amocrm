@@ -32,6 +32,8 @@ type Client interface {
 	TokenByCode(code string) (Token, error)
 	SetToken(token Token) error
 	SetDomain(domain string) error
+	LoadTokenOrAuthorize(authCode string) error
+
 	Accounts() Accounts
 	Leads() Leads
 	Contacts() Contacts
