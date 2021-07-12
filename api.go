@@ -82,9 +82,11 @@ type api struct {
 	token  Token
 
 	http *http.Client
+
+	storage TokenStorage
 }
 
-func newAPI(clientID, clientSecret, redirectURL string) *api {
+func newAPI(clientID, clientSecret, redirectURL string, storage TokenStorage) *api {
 	return &api{
 		clientID:     clientID,
 		clientSecret: clientSecret,
@@ -92,6 +94,8 @@ func newAPI(clientID, clientSecret, redirectURL string) *api {
 		http: &http.Client{
 			Timeout: requestTimeout,
 		},
+
+		storage: storage,
 	}
 }
 
@@ -164,7 +168,20 @@ func (a *api) setToken(token Token) error {
 		return errors.New("invalid token")
 	}
 	a.token = token
+
+	if a.storage != nil {
+		return a.storage.SetToken(token)
+	}
+
 	return nil
+}
+
+func (a *api) loadToken() (Token, error) {
+	if a.storage == nil {
+		return nil, nil
+	}
+
+	return a.storage.GetToken()
 }
 
 func (a *api) setDomain(domain string) error {
@@ -298,6 +315,10 @@ func (a *api) refreshToken() error {
 	}
 
 	a.token = token
+	if a.storage != nil {
+		return a.storage.SetToken(token)
+	}
+
 	return nil
 }
 
@@ -346,9 +367,4 @@ func isValidDomain(domain string) bool {
 
 func oauth2Err(format string, args ...interface{}) error {
 	return fmt.Errorf("oauth2: "+format, args...)
-}
-
-type apiResponse struct {
-	Links    map[string]map[string]string `json:"_links"`
-	Embedded interface{}                  `json:"_embedded"`
 }

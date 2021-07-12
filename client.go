@@ -60,7 +60,13 @@ func RandomState() string {
 // New allocates and returns a new amoCRM API Client.
 func New(clientID, clientSecret, redirectURL string) Client {
 	return &amoCRM{
-		api: newAPI(clientID, clientSecret, redirectURL),
+		api: newAPI(clientID, clientSecret, redirectURL, nil),
+	}
+}
+
+func NewWithStorage(tokenStorage TokenStorage, clientID, clientSecret, redirectURL string) Client {
+	return &amoCRM{
+		api: newAPI(clientID, clientSecret, redirectURL, tokenStorage),
 	}
 }
 
@@ -92,6 +98,24 @@ func (a *amoCRM) SetToken(token Token) error {
 // SetToken stores given domain to build accounts-specific API endpoints.
 func (a *amoCRM) SetDomain(domain string) error {
 	return a.api.setDomain(domain)
+}
+
+func (a *amoCRM) LoadTokenOrAuthorize(authCode string) error {
+	token, err := a.api.loadToken()
+	if err != nil {
+		return err
+	}
+
+	if token != nil {
+		return a.api.setToken(token)
+	}
+
+	token, err = a.TokenByCode(authCode)
+	if err != nil {
+		return err
+	}
+
+	return a.api.setToken(token)
 }
 
 // TokenByCode makes a handshake with amoCRM, exchanging given

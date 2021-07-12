@@ -28,7 +28,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/alexeykhan/amocrm"
+	"github.com/sintanial/amocrm"
 )
 
 var (

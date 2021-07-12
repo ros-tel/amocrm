@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alexeykhan/amocrm"
+	"github.com/sintanial/amocrm"
 )
 
 var (

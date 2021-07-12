@@ -119,4 +119,3 @@ func (t tokenSource) Expired() bool {
 
 	return t.expiresAt.Round(0).Add(-expiryDelta).Before(time.Now())
 }
-
