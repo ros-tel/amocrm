@@ -141,3 +141,7 @@ func (a *amoCRM) Leads() Leads {
 func (a *amoCRM) Contacts() Contacts {
 	return newContacts(a.api)
 }
+
+func (a *amoCRM) Users() Users {
+	return newUsers(a.api)
+}
