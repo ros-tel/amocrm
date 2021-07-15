@@ -52,6 +52,7 @@ type Lead struct {
 
 // Leads describes methods available for Leads entity.
 type Leads interface {
+	Get(id string) (*Lead, error)
 	Create(leads []Lead) ([]Lead, error)
 	Update(leads []Lead) ([]Lead, error)
 }
@@ -67,11 +68,25 @@ func newLeads(api *api) Leads {
 	return leads{api: api}
 }
 
+func (a leads) Get(id string) (*Lead, error) {
+	resp, rErr := a.api.do(endpoint(fmt.Sprintf("leads/%s", id)), http.MethodGet, nil, nil, nil)
+	if rErr != nil {
+		return nil, fmt.Errorf("get leads: %w", rErr)
+	}
+
+	var res Lead
+	if err := a.api.read(resp, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 // Current returns an Leads entity for current authorized user.
 func (a leads) Create(leads []Lead) ([]Lead, error) {
 	resp, rErr := a.api.do(leadsEndpoint, http.MethodPost, nil, nil, leads)
 	if rErr != nil {
-		return nil, fmt.Errorf("get leads: %w", rErr)
+		return nil, fmt.Errorf("create leads: %w", rErr)
 	}
 
 	var res struct {
@@ -90,7 +105,7 @@ func (a leads) Create(leads []Lead) ([]Lead, error) {
 func (a leads) Update(leads []Lead) ([]Lead, error) {
 	resp, rErr := a.api.do(leadsEndpoint, http.MethodPatch, nil, nil, leads)
 	if rErr != nil {
-		return nil, fmt.Errorf("get leads: %w", rErr)
+		return nil, fmt.Errorf("update leads: %w", rErr)
 	}
 
 	var res struct {
