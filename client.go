@@ -37,6 +37,7 @@ type Client interface {
 	Accounts() Accounts
 	Leads() Leads
 	Contacts() Contacts
+	Users() Users
 }
 
 // Verify interface compliance.
