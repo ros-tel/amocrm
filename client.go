@@ -30,11 +30,13 @@ import (
 type Client interface {
 	AuthorizeURL(state, mode string) (*url.URL, error)
 	TokenByCode(code string) (Token, error)
+	LoadTokenOrAuthorize(code string) error
 	SetToken(token Token) error
 	SetDomain(domain string) error
 	Accounts() Accounts
 	Leads() Leads
 	Contacts() Contacts
+	Calls() Calls
 }
 
 // Verify interface compliance.
@@ -138,4 +140,8 @@ func (a *amoCRM) Leads() Leads {
 
 func (a *amoCRM) Contacts() Contacts {
 	return newContacts(a.api)
+}
+
+func (a *amoCRM) Calls() Calls {
+	return newCalls(a.api)
 }
