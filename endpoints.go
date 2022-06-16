@@ -29,6 +29,10 @@ import (
 type endpoint string
 
 func (e endpoint) path() string {
+	if e == eventsV2endpoint {
+		return fmt.Sprintf("/api/v2/%s/", e)
+	}
+
 	return fmt.Sprintf("/api/v%d/%s", apiVersion, e)
 }
 

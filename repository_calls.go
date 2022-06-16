@@ -21,6 +21,7 @@
 package amocrm
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -30,6 +31,13 @@ const (
 )
 
 type (
+	Error struct {
+		Detail    string `json:"detail"`
+		RequestID string `json:"request_id"`
+		Status    int    `json:"status"`
+		Title     string `json:"title"`
+	}
+
 	Call struct {
 		Direction         string `json:"direction"`                     // Направление звонка. inbound – входящий, outbound – исходящий. Обязательный параметр
 		Uniq              string `json:"uniq,omitempty"`                // Уникальный идентификатор звонка. Необязательный параметр
@@ -50,7 +58,7 @@ type (
 
 // Calls describes methods available for Calls entity
 type Calls interface {
-	Create(calls []Call) ([]Contact, error)
+	Create(calls []Call) ([]Contact, []Error, error)
 }
 
 // Verify interface compliance.
@@ -65,20 +73,36 @@ func newCalls(api *api) Calls {
 }
 
 // Create returns an Contacts entity for successfully added Calls
-func (a calls) Create(calls []Call) ([]Contact, error) {
+func (a calls) Create(calls []Call) ([]Contact, []Error, error) {
 	resp, rErr := a.api.do(callsEndpoint, http.MethodPost, nil, nil, calls)
 	if rErr != nil {
-		return nil, fmt.Errorf("get calls: %w", rErr)
+		return nil, nil, fmt.Errorf("get calls: %w", rErr)
 	}
 
 	var res struct {
+		Errors   []Error `json:"errors"`
 		Embedded struct {
 			Contacts []Contact `json:"calls"`
 		} `json:"_embedded"`
 	}
-	if err := a.api.read(resp, &res); err != nil {
-		return nil, err
+	if err := a.api.readCall(resp, &res); err != nil {
+		return nil, nil, err
 	}
 
-	return res.Embedded.Contacts, nil
+	return res.Embedded.Contacts, res.Errors, nil
+}
+
+func (a *api) readCall(response *http.Response, target interface{}) (err error) {
+	defer func() {
+		if clErr := response.Body.Close(); clErr != nil {
+			if err != nil {
+				err = fmt.Errorf("close response body: %v: %v", clErr, err)
+			} else {
+				err = fmt.Errorf("close response body: %w", clErr)
+			}
+		}
+	}()
+
+	err = json.NewDecoder(response.Body).Decode(target)
+	return
 }

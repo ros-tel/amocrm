@@ -37,6 +37,7 @@ type Client interface {
 	Leads() Leads
 	Contacts() Contacts
 	Calls() Calls
+	EventsV2() EventsV2
 }
 
 // Verify interface compliance.
@@ -144,4 +145,8 @@ func (a *amoCRM) Contacts() Contacts {
 
 func (a *amoCRM) Calls() Calls {
 	return newCalls(a.api)
+}
+
+func (a *amoCRM) EventsV2() EventsV2 {
+	return newEventsV2(a.api)
 }
